@@ -1,6 +1,7 @@
 import Navbar from "@/components/home/navbar";
 import Hero from "@/components/home/hero";
 import Categories from "@/components/home/categories";
+import FeaturedServices from "@/components/home/featured-services";
 import { FaInstagram, FaFacebookF } from "react-icons/fa";
 import Link from "next/link";
 import {
@@ -64,99 +65,7 @@ export default function HomePage() {
       <Categories />
       {/* ================= FEATURED SERVICES ================= */}
 
-      <section
-        id="services"
-        className="mx-auto max-w-7xl px-5 py-24 lg:px-8"
-      >
-
-        <div className="flex flex-wrap items-end justify-between gap-5">
-
-          <div>
-
-            <p className="text-xs font-bold tracking-[0.25em] text-[#9D5964] uppercase">
-              Our Best Treatments
-            </p>
-
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
-              Featured Services
-            </h2>
-
-            <p className="mt-3 text-sm text-[#786e68]">
-              A little luxury, a lot of confidence.
-            </p>
-
-          </div>
-
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#81434F]"
-          >
-            View All Services
-            <ArrowRight size={17} />
-          </Link>
-
-        </div>
-
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-
-          {services.map((service) => (
-
-            <article
-              key={service.name}
-              className="group overflow-hidden rounded-2xl border border-[#eee6df] bg-white transition hover:-translate-y-1 hover:shadow-xl"
-            >
-
-              <div
-                className="h-64 bg-cover bg-center transition duration-500 group-hover:scale-[1.02]"
-                style={{
-                  backgroundImage: `url(${service.image})`,
-                }}
-              />
-
-              <div className="p-6">
-
-                <p className="text-xs font-semibold text-[#9D5964]">
-                  {service.category}
-                </p>
-
-                <h3 className="mt-2 text-xl font-semibold">
-                  {service.name}
-                </h3>
-
-                <div className="mt-5 flex items-center justify-between">
-
-                  <div>
-
-                    <p className="text-xl font-bold">
-                      ${service.price}
-                    </p>
-
-                    <p className="mt-1 flex items-center gap-1 text-xs text-[#897f79]">
-                      <Clock3 size={14} />
-                      {service.duration}
-                    </p>
-
-                  </div>
-
-                  <Link
-                    href="/services"
-                    className="rounded-full bg-[#f7eeeb] px-5 py-3 text-xs font-bold text-[#81434F] transition hover:bg-[#81434F] hover:text-white"
-                  >
-                    View Details
-                  </Link>
-
-                </div>
-
-              </div>
-
-            </article>
-
-          ))}
-
-        </div>
-
-      </section>
-
+      <FeaturedServices />
       {/* ================= ABOUT SECTION ================= */}
 
       <section
