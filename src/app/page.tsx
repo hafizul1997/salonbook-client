@@ -1,5 +1,6 @@
 import Navbar from "@/components/home/navbar";
 import Hero from "@/components/home/hero";
+import Categories from "@/components/home/categories";
 import { FaInstagram, FaFacebookF } from "react-icons/fa";
 import Link from "next/link";
 import {
@@ -60,65 +61,7 @@ export default function HomePage() {
 
       {/* ================= CATEGORIES ================= */}
 
-      <section className="bg-[#F4EEEA] px-5 py-20">
-
-        <div className="mx-auto max-w-7xl">
-
-          <div className="text-center">
-
-            <p className="text-xs font-bold tracking-[0.25em] text-[#9D5964] uppercase">
-              Explore Our World
-            </p>
-
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
-              Our Beauty Categories
-            </h2>
-
-            <p className="mt-4 text-sm text-[#786e68]">
-              Find the perfect treatment for your beauty needs.
-            </p>
-
-          </div>
-
-          <div className="mt-12 grid gap-5 sm:grid-cols-3">
-
-            {categories.map((category) => {
-              const Icon = category.icon;
-
-              return (
-                <Link
-                  key={category.name}
-                  href="/services"
-                  className="group flex items-center justify-between rounded-2xl border border-[#e8dcd4] bg-white p-7 transition hover:-translate-y-1 hover:shadow-lg"
-                >
-
-                  <div className="flex items-center gap-4">
-
-                    <div className="rounded-xl bg-[#f7eeeb] p-4 text-[#81434F]">
-                      <Icon size={25} />
-                    </div>
-
-                    <h3 className="font-semibold">
-                      {category.name}
-                    </h3>
-
-                  </div>
-
-                  <ArrowRight
-                    size={19}
-                    className="text-[#9D5964] transition group-hover:translate-x-1"
-                  />
-
-                </Link>
-              );
-            })}
-
-          </div>
-
-        </div>
-
-      </section>
-
+      <Categories />
       {/* ================= FEATURED SERVICES ================= */}
 
       <section
