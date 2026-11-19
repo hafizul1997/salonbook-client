@@ -1,39 +1,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Clock3, Star } from "lucide-react";
-
-const featuredServices = [
-  {
-    id: 1,
-    name: "Signature Haircut",
-    category: "Hair Styling",
-    price: 45,
-    duration: "45 min",
-    rating: 4.9,
-    image:
-      "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800",
-  },
-  {
-    id: 2,
-    name: "Luxury Facial",
-    category: "Skincare",
-    price: 65,
-    duration: "60 min",
-    rating: 5.0,
-    image:
-      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800",
-  },
-  {
-    id: 3,
-    name: "Hair Coloring",
-    category: "Hair Styling",
-    price: 90,
-    duration: "90 min",
-    rating: 4.8,
-    image:
-      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800",
-  },
-];
+import { services as featuredServices } from "@/data/services";
 
 export default function FeaturedServices() {
   return (
