@@ -3,6 +3,7 @@ import Hero from "@/components/home/hero";
 import Categories from "@/components/home/categories";
 import FeaturedServices from "@/components/home/featured-services";
 import About from "@/components/home/about";
+import Testimonials from "@/components/home/testimonials";
 import { FaInstagram, FaFacebookF } from "react-icons/fa";
 import Link from "next/link";
 import {
@@ -70,6 +71,10 @@ export default function HomePage() {
       {/* ================= ABOUT SECTION ================= */}
 
       <About />
+
+      {/* ================= TESTIMONIALS ================= */}
+
+      <Testimonials />
 
       {/* ================= FOOTER ================= */}
 
