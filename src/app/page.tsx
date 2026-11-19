@@ -2,6 +2,7 @@ import Navbar from "@/components/home/navbar";
 import Hero from "@/components/home/hero";
 import Categories from "@/components/home/categories";
 import FeaturedServices from "@/components/home/featured-services";
+import About from "@/components/home/about";
 import { FaInstagram, FaFacebookF } from "react-icons/fa";
 import Link from "next/link";
 import {
@@ -68,46 +69,7 @@ export default function HomePage() {
       <FeaturedServices />
       {/* ================= ABOUT SECTION ================= */}
 
-      <section
-        id="about"
-        className="bg-[#81434F] px-5 py-20 text-white"
-      >
-
-        <div className="mx-auto grid max-w-7xl items-center gap-10 md:grid-cols-2">
-
-          <div>
-
-            <p className="text-xs font-bold tracking-[0.25em] text-[#f1c9c7] uppercase">
-              The SalonBook Experience
-            </p>
-
-            <h2 className="mt-5 max-w-lg text-4xl leading-tight font-semibold sm:text-5xl">
-              Beauty is not a luxury. It is self-care.
-            </h2>
-
-          </div>
-
-          <div>
-
-            <p className="leading-8 text-white/80">
-              We believe everyone deserves a moment to relax, refresh,
-              and feel confident. Explore our professional salon services
-              and let us take care of you.
-            </p>
-
-            <Link
-              href="/services"
-              className="mt-7 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-[#81434F] transition hover:bg-[#f4e9e5]"
-            >
-              Book Your Experience
-              <ArrowRight size={18} />
-            </Link>
-
-          </div>
-
-        </div>
-
-      </section>
+      <About />
 
       {/* ================= FOOTER ================= */}
 
