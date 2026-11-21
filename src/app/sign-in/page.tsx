@@ -1,14 +1,83 @@
 
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Scissors,
   Mail,
   LockKeyhole,
   ArrowRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Email and Password Login
+  const handleEmailSignIn = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      callbackURL: "http://localhost:3000/auth/redirect",
+      
+      });
+
+      if (result.error) {
+        setError(result.error.message || "Invalid email or password.");
+        return;
+      }
+
+     router.push("/dashboard");
+     router.refresh();
+    } catch (err) {
+      console.error("Sign in error:", err);
+      setError("Unable to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google Login
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      const result = await authClient.signIn.social({
+        provider: "google",
+    callbackURL: "http://localhost:3000/auth/redirect",
+      });
+
+      if (result.error) {
+        setError(
+          result.error.message || "Google sign in failed."
+        );
+        setGoogleLoading(false);
+      }
+    } catch (err) {
+      console.error("Google sign in error:", err);
+      setError("Unable to connect with Google. Please try again.");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <main className="grid min-h-screen bg-[#FCFAF7] lg:grid-cols-2">
       {/* LEFT SIDE - BRANDING */}
@@ -71,7 +140,64 @@ export default function SignInPage() {
             </p>
           </div>
 
-          <form className="mt-9 space-y-6">
+          {/* ERROR MESSAGE */}
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600"
+            >
+              {error}
+            </div>
+          )}
+
+          {/* GOOGLE SIGN IN */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading || googleLoading}
+            className="mt-8 flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-[#E9DFD8] bg-white text-sm font-bold text-[#29201F] transition hover:bg-[#F8F4F0] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {googleLoading ? (
+              <Loader2 size={19} className="animate-spin" />
+            ) : (
+              <svg viewBox="0 0 48 48" className="h-5 w-5">
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.01 13.22l7.98 6.19C11.89 13.72 17.42 9.5 24 9.5Z"
+                  transform="translate(0 5)"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 38.02 46.98 31.92 46.98 24.55Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M9.99 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a24 24 0 0 0 0 21.56l7.98-6.19Z"
+                  transform="translate(0 5)"
+                />
+                <path
+                  fill="#34A853"
+                  d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.88 2.3-8.18 2.3-6.58 0-12.11-4.22-14.01-10.09l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"
+                />
+              </svg>
+            )}
+
+            {googleLoading
+              ? "Connecting to Google..."
+              : "Continue with Google"}
+          </button>
+
+          {/* DIVIDER */}
+          <div className="my-7 flex items-center gap-4">
+            <div className="h-px flex-1 bg-[#E9DFD8]" />
+            <span className="text-xs font-medium text-[#A69A93]">
+              OR CONTINUE WITH EMAIL
+            </span>
+            <div className="h-px flex-1 bg-[#E9DFD8]" />
+          </div>
+
+          {/* EMAIL AND PASSWORD FORM */}
+          <form onSubmit={handleEmailSignIn} className="space-y-6">
             {/* EMAIL */}
             <div>
               <label
@@ -94,6 +220,8 @@ export default function SignInPage() {
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="h-14 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
                 />
               </div>
@@ -121,6 +249,8 @@ export default function SignInPage() {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-14 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
                 />
               </div>
@@ -144,12 +274,21 @@ export default function SignInPage() {
 
             {/* SUBMIT */}
             <button
-              type="button"
-              disabled
-              className="flex h-14 w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-[#81434F] text-sm font-bold text-white opacity-70"
+              type="submit"
+              disabled={loading || googleLoading}
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#81434F] text-sm font-bold text-white transition hover:bg-[#6F3541] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sign In
-              <ArrowRight size={18} />
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
 
             <p className="text-center text-sm text-[#897F79]">

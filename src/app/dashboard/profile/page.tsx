@@ -1,4 +1,6 @@
 
+"use client";
+
 import {
   UserRound,
   Mail,
@@ -6,15 +8,37 @@ import {
   CalendarDays,
   ShieldCheck,
 } from "lucide-react";
-
-const profile = {
-  name: "John Doe",
-  email: "john@example.com",
-  phone: "+1 234 567 8900",
-  memberSince: "November 2026",
-};
+import { authClient } from "@/lib/auth-client";
 
 export default function ProfilePage() {
+  const { data: session, isPending } = authClient.useSession();
+console.log("SESSION USER:", session?.user);
+console.log("SESSION ROLE:", session?.user?.role);
+  if (isPending) {
+    return (
+      <div className="py-12 text-center text-gray-500">
+        Loading your profile...
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="py-12 text-center text-gray-500">
+        Please sign in to view your profile.
+      </div>
+    );
+  }
+
+  const user = session.user;
+
+  const memberSince = user.createdAt
+    ? new Date(user.createdAt).toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      })
+    : "Not available";
+
   return (
     <div>
       <div className="mb-8">
@@ -40,7 +64,7 @@ export default function ProfilePage() {
 
             <div>
               <h2 className="text-xl font-bold">
-                {profile.name}
+                {user.name || "SalonBook Customer"}
               </h2>
               <p className="mt-1 text-sm text-white/80">
                 SalonBook Customer
@@ -61,7 +85,7 @@ export default function ProfilePage() {
                 Full Name
               </div>
               <p className="font-semibold text-[#29201F]">
-                {profile.name}
+                {user.name || "Not available"}
               </p>
             </div>
 
@@ -71,7 +95,7 @@ export default function ProfilePage() {
                 Email Address
               </div>
               <p className="font-semibold text-[#29201F]">
-                {profile.email}
+                {user.email}
               </p>
             </div>
 
@@ -81,7 +105,7 @@ export default function ProfilePage() {
                 Phone Number
               </div>
               <p className="font-semibold text-[#29201F]">
-                {profile.phone}
+                Not added yet
               </p>
             </div>
 
@@ -91,7 +115,7 @@ export default function ProfilePage() {
                 Member Since
               </div>
               <p className="font-semibold text-[#29201F]">
-                {profile.memberSince}
+                {memberSince}
               </p>
             </div>
           </div>
@@ -105,18 +129,10 @@ export default function ProfilePage() {
                 Account Information
               </p>
               <p className="mt-1 text-xs text-green-700">
-                Your account details are displayed here.
+                Your account details are loaded from your authenticated account.
               </p>
             </div>
           </div>
-
-          <button
-            type="button"
-            disabled
-            className="mt-6 w-full cursor-not-allowed rounded-xl bg-[#81434F] px-5 py-3 text-sm font-semibold text-white opacity-60 sm:w-auto"
-          >
-            Edit Profile (Coming Soon)
-          </button>
         </div>
       </div>
     </div>
