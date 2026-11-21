@@ -1,9 +1,16 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Clock3, ArrowRight, SlidersHorizontal } from "lucide-react";
+import { useParams } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Clock3,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import { apiRequest } from "@/lib/api";
 
 type Service = {
@@ -12,193 +19,168 @@ type Service = {
   category: string;
   description: string;
   price: number;
-  duration: number;
+  duration: number | string;
   image: string;
   status: "active" | "inactive";
 };
 
 type ServicesResponse = {
   success: boolean;
-  message: string;
   total: number;
   data: Service[];
 };
 
-export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("");
+export default function ServiceDetailsPage() {
+  const params = useParams<{ id: string }>();
+
+  const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadServices() {
-      setLoading(true);
+  const loadService = useCallback(async () => {
+    try {
       setError("");
 
-      try {
-        const params = new URLSearchParams();
+      const response = await apiRequest<ServicesResponse>("/services");
 
-        if (search.trim()) params.set("search", search.trim());
-        if (sort) params.set("sort", sort);
+      const foundService = response.data.find(
+        (item) => item._id === params.id
+      );
 
-        const query = params.toString();
-        const result = await apiRequest<ServicesResponse>(
-          `/services${query ? `?${query}` : ""}`
-        );
-
-        if (!cancelled) {
-          setServices(result.data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load services"
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (!foundService) {
+        setError("Service not found or currently unavailable.");
+        return;
       }
+
+      setService(foundService);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load service details."
+      );
+    } finally {
+      setLoading(false);
     }
+  }, [params.id]);
 
-    loadServices();
+  useEffect(() => {
+    void Promise.resolve().then(loadService);
+  }, [loadService]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [search, sort]);
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FCFAF7]">
+        <Loader2 className="animate-spin text-[#81434F]" size={28} />
+        <p className="ml-3 text-sm text-[#81434F]">
+          Loading service details...
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !service) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#FCFAF7] px-5 text-center">
+        <h1 className="text-2xl font-bold text-[#29201F]">
+          Service Not Found
+        </h1>
+
+        <p className="mt-3 text-sm text-gray-500">
+          {error || "This service is unavailable."}
+        </p>
+
+        <Link
+          href="/services"
+          className="mt-6 rounded-full bg-[#81434F] px-7 py-3 text-sm font-bold text-white"
+        >
+          Back to Services
+        </Link>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#FCFAF7]">
-      <section className="bg-[#81434F] px-5 py-16 text-center text-white">
-        <p className="text-sm font-semibold uppercase tracking-[0.25em]">
-          Discover Our Treatments
-        </p>
-        <h1 className="mt-4 text-3xl font-bold md:text-5xl">
-          Our Salon Services
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/80">
-          Explore our professional beauty and wellness services.
-        </p>
-      </section>
+      <div className="mx-auto max-w-7xl px-5 pt-8 lg:px-8">
+        <Link
+          href="/services"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#81434F] hover:gap-3"
+        >
+          <ArrowLeft size={17} />
+          Back to Services
+        </Link>
+      </div>
 
-      <section className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
-        <div className="mb-9 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-[#29201F]">
-              Available Services
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Explore our latest salon treatments.
-            </p>
-          </div>
+      <section className="mx-auto grid max-w-7xl gap-12 px-5 py-12 lg:grid-cols-2 lg:px-8 lg:py-20">
+        <div
+          className="min-h-87.5 rounded-3xl bg-cover bg-center shadow-lg sm:min-h-125"
+          style={{
+            backgroundImage: `url("${service.image}")`,
+          }}
+          role="img"
+          aria-label={service.serviceName}
+        />
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="flex items-center gap-2 rounded-xl border border-[#EDE5DF] bg-white px-4">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search services..."
-                className="w-full py-3 text-sm outline-none sm:w-52"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 rounded-xl border border-[#EDE5DF] bg-white px-4">
-              <SlidersHorizontal size={17} className="text-gray-400" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="bg-transparent py-3 text-sm outline-none"
-                aria-label="Sort services by price"
-              >
-                <option value="">Newest First</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <p className="py-20 text-center text-[#81434F]">
-            Loading services from SalonBook...
+        <div className="flex flex-col justify-center">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#9D5964]">
+            {service.category}
           </p>
-        ) : error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-            <p className="font-semibold text-red-700">
-              Unable to load services
-            </p>
-            <p className="mt-2 text-sm text-red-600">{error}</p>
+
+          <h1 className="mt-4 text-4xl font-semibold text-[#29201F] sm:text-5xl">
+            {service.serviceName}
+          </h1>
+
+          <div className="mt-6 flex flex-wrap items-center gap-5">
+            <span className="flex items-center gap-2 text-sm text-[#786e68]">
+              <Clock3 size={17} />
+              {service.duration} minutes
+            </span>
           </div>
-        ) : services.length === 0 ? (
-          <div className="rounded-2xl border border-[#EDE5DF] bg-white p-12 text-center">
-            <h3 className="text-xl font-semibold text-[#29201F]">
-              No Services Found
-            </h3>
-            <p className="mt-3 text-sm text-gray-500">
-              Try another search or check back later.
+
+          <div className="mt-8 border-y border-[#eee6df] py-7">
+            <p className="text-sm text-[#897f79]">
+              Service Price
+            </p>
+
+            <p className="mt-2 text-4xl font-bold text-[#81434F]">
+              ${service.price}
             </p>
           </div>
-        ) : (
-          <>
-            <p className="mb-5 text-sm text-gray-500">
-              {services.length} service(s) found
-            </p>
 
-            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-              {services.map((service) => (
-                <article
-                  key={service._id}
-                  className="group overflow-hidden rounded-2xl border border-[#EDE5DF] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div
-                    className="h-60 bg-cover bg-center bg-gray-100"
-                    style={{ backgroundImage: `url("${service.image}")` }}
-                    role="img"
-                    aria-label={service.serviceName}
-                  />
+          <h2 className="mt-8 text-xl font-semibold">
+            About This Service
+          </h2>
 
-                  <div className="p-6">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[#9D5964]">
-                      {service.category}
-                    </p>
-                    <h3 className="mt-3 text-xl font-bold text-[#29201F]">
-                      {service.serviceName}
-                    </h3>
-                    <p className="mt-3 line-clamp-3 text-sm leading-7 text-gray-500">
-                      {service.description}
-                    </p>
+          <p className="mt-4 text-sm leading-8 text-[#786e68]">
+            {service.description}
+          </p>
 
-                    <div className="mt-5 flex items-center justify-between border-t border-[#EDE5DF] pt-5">
-                      <div>
-                        <p className="text-xs text-gray-400">Service Price</p>
-                        <p className="mt-1 text-2xl font-bold text-[#81434F]">
-                          ${service.price}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <Clock3 size={16} />
-                        {service.duration} min
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/services/${service._id}`}
-                      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#81434F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#693541]"
-                    >
-                      View Details
-                      <ArrowRight size={17} />
-                    </Link>
-                  </div>
-                </article>
-              ))}
+          <div className="mt-7 space-y-3">
+            <div className="flex items-center gap-3 text-sm text-[#786e68]">
+              <CheckCircle2 size={18} className="text-[#81434F]" />
+              Professional service
             </div>
-          </>
-        )}
+
+            <div className="flex items-center gap-3 text-sm text-[#786e68]">
+              <CheckCircle2 size={18} className="text-[#81434F]" />
+              Experienced beauty specialists
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-[#786e68]">
+              <CheckCircle2 size={18} className="text-[#81434F]" />
+              Easy appointment booking
+            </div>
+          </div>
+
+          <Link
+            href="/sign-in"
+            className="mt-10 inline-flex w-fit items-center gap-3 rounded-full bg-[#81434F] px-8 py-4 text-sm font-bold text-white transition hover:bg-[#693541]"
+          >
+            Book Appointment
+            <ArrowRight size={18} />
+          </Link>
+        </div>
       </section>
     </main>
   );

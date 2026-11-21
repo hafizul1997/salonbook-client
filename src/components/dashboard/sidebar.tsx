@@ -1,8 +1,9 @@
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -10,7 +11,11 @@ import {
   UserRound,
   ArrowLeft,
   Scissors,
+  LogOut,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 const navigation = [
   {
@@ -37,6 +42,33 @@ const navigation = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+
+    setSigningOut(true);
+
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        throw new Error(error.message || "Failed to sign out.");
+      }
+
+      toast.success("Signed out successfully.");
+      router.replace("/sign-in");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to sign out."
+      );
+
+      setSigningOut(false);
+    }
+  };
 
   return (
     <aside className="flex min-h-screen w-full flex-col border-r border-[#EDE5DF] bg-white px-5 py-7 md:w-64">
@@ -57,7 +89,12 @@ export default function DashboardSidebar() {
       <nav className="flex flex-col gap-2">
         {navigation.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname === item.href ||
+                pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
@@ -84,6 +121,21 @@ export default function DashboardSidebar() {
           <ArrowLeft size={19} />
           Back to Home
         </Link>
+
+        <button
+          type="button"
+          onClick={() => void handleSignOut()}
+          disabled={signingOut}
+          className="mt-2 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {signingOut ? (
+            <Loader2 size={19} className="animate-spin" />
+          ) : (
+            <LogOut size={19} />
+          )}
+
+          {signingOut ? "Signing Out..." : "Sign Out"}
+        </button>
       </div>
     </aside>
   );
