@@ -1,5 +1,9 @@
 
+"use client";
+
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Scissors,
   UserRound,
@@ -7,13 +11,53 @@ import {
   LockKeyhole,
   ArrowRight,
   Sparkles,
-  Phone,
+  Loader2,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const redirectUrl = "/auth/redirect?returnTo=%2Fdashboard";
+
+      const result = await authClient.signUp.email({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        callbackURL: `${window.location.origin}${redirectUrl}`,
+      });
+
+      if (result.error) {
+        setError(
+          result.error.message || "Unable to create your account."
+        );
+        return;
+      }
+
+      router.replace(redirectUrl);
+      router.refresh();
+    } catch (err) {
+      console.error("Sign up error:", err);
+      setError("Unable to create your account. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="grid min-h-screen bg-[#FCFAF7] lg:grid-cols-2">
-      {/* LEFT SIDE - BRANDING */}
       <section className="relative hidden flex-col justify-between overflow-hidden bg-[#81434F] p-12 text-white lg:flex">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
@@ -43,10 +87,8 @@ export default function SignUpPage() {
         <div className="absolute -bottom-32 -left-24 h-96 w-96 rounded-full border border-white/10" />
       </section>
 
-      {/* RIGHT SIDE - SIGN UP FORM */}
       <section className="flex items-center justify-center px-5 py-12 sm:px-10">
         <div className="w-full max-w-md">
-          {/* MOBILE BRAND */}
           <Link
             href="/"
             className="mb-10 flex items-center justify-center gap-3 lg:hidden"
@@ -74,8 +116,16 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          <form className="mt-8 space-y-5">
-            {/* FULL NAME */}
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600"
+            >
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSignUp} className="mt-8 space-y-5">
             <div>
               <label
                 htmlFor="name"
@@ -97,12 +147,14 @@ export default function SignUpPage() {
                   placeholder="Enter your full name"
                   autoComplete="name"
                   required
+                  minLength={2}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="h-13 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
                 />
               </div>
             </div>
 
-            {/* EMAIL */}
             <div>
               <label
                 htmlFor="email"
@@ -124,38 +176,13 @@ export default function SignUpPage() {
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="h-13 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
                 />
               </div>
             </div>
 
-            {/* PHONE */}
-            <div>
-              <label
-                htmlFor="phone"
-                className="mb-2 block text-sm font-semibold text-[#29201F]"
-              >
-                Phone Number
-              </label>
-
-              <div className="relative">
-                <Phone
-                  size={18}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A69A93]"
-                />
-
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  autoComplete="tel"
-                  className="h-13 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
-                />
-              </div>
-            </div>
-
-            {/* PASSWORD */}
             <div>
               <label
                 htmlFor="password"
@@ -178,6 +205,8 @@ export default function SignUpPage() {
                   autoComplete="new-password"
                   required
                   minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="h-13 w-full rounded-xl border border-[#E9DFD8] bg-white pl-12 pr-4 text-sm outline-none transition placeholder:text-[#B5AAA4] focus:border-[#81434F] focus:ring-2 focus:ring-[#81434F]/10"
                 />
               </div>
@@ -187,7 +216,6 @@ export default function SignUpPage() {
               </p>
             </div>
 
-            {/* TERMS */}
             <label className="flex items-start gap-3 text-xs leading-6 text-[#786E68]">
               <input
                 type="checkbox"
@@ -200,14 +228,22 @@ export default function SignUpPage() {
               </span>
             </label>
 
-            {/* SUBMIT */}
             <button
-              type="button"
-              disabled
-              className="flex h-14 w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl bg-[#81434F] text-sm font-bold text-white opacity-70"
+              type="submit"
+              disabled={loading}
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#81434F] text-sm font-bold text-white transition hover:bg-[#6F3541] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Create Account
-              <ArrowRight size={18} />
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
 
             <p className="text-center text-sm text-[#897F79]">

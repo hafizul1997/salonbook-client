@@ -7,35 +7,57 @@ import { authClient } from "@/lib/auth-client";
 
 export default function AuthRedirectPage() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    if (isPending) return;
+    let cancelled = false;
 
-    if (!session?.user) {
-      router.replace("/sign-in");
-      return;
-    }
+    const checkSession = async () => {
+      try {
+        const result = await authClient.getSession();
 
-    // Admin must always go to the admin dashboard.
-    if (session.user.role === "admin") {
-      router.replace("/admin");
-      return;
-    }
+        if (cancelled) return;
 
-    // Restore the requested page after customer login.
-    const params = new URLSearchParams(window.location.search);
-    const requestedPath = params.get("returnTo");
+        const session = result.data;
 
-    const safeReturnTo =
-      requestedPath &&
-      requestedPath.startsWith("/") &&
-      !requestedPath.startsWith("//")
-        ? requestedPath
-        : "/dashboard";
+        if (!session?.user) {
+          router.replace("/sign-in");
+          return;
+        }
 
-    router.replace(safeReturnTo);
-  }, [session, isPending, router]);
+        if (session.user.role === "admin") {
+          router.replace("/admin");
+          return;
+        }
+
+        const params = new URLSearchParams(
+          window.location.search
+        );
+
+        const requestedPath = params.get("returnTo");
+
+        const safeReturnTo =
+          requestedPath &&
+          requestedPath.startsWith("/") &&
+          !requestedPath.startsWith("//")
+            ? requestedPath
+            : "/dashboard";
+
+        router.replace(safeReturnTo);
+      } catch (error) {
+        console.error("Session verification failed:", error);
+
+        if (!cancelled) {
+          router.replace("/sign-in");
+        }
+      }
+    };
+
+    void checkSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

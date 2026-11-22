@@ -10,6 +10,10 @@ export const authClient = createAuthClient({
     process.env.NEXT_PUBLIC_AUTH_URL ||
     "http://localhost:5000",
 
+  fetchOptions: {
+    credentials: "include",
+  },
+
   plugins: [
     jwtClient(),
 
@@ -17,9 +21,11 @@ export const authClient = createAuthClient({
       user: {
         role: {
           type: "string",
+          required: false,
         },
         isBlocked: {
           type: "boolean",
+          required: false,
         },
       },
     }),
