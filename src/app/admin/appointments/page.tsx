@@ -1,6 +1,7 @@
 
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
@@ -9,6 +10,7 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiRequest } from "@/lib/api";
@@ -16,6 +18,11 @@ import { apiRequest } from "@/lib/api";
 type Appointment = {
   _id: string;
   customerId: string;
+  customer?: {
+    name: string;
+    email: string;
+    image: string;
+  } | null;
   serviceId:
     | {
         _id: string;
@@ -85,10 +92,15 @@ export default function ManageAppointmentsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    void Promise.resolve().then(loadAppointments);
-  }, [loadAppointments]);
+ useEffect(() => {
+  const timer = Promise.resolve().then(() => {
+    void loadAppointments();
+  });
 
+  return () => {
+    void timer;
+  };
+}, [loadAppointments]);
   const handleAction = async (
     id: string,
     action: "confirm" | "cancel"
@@ -137,11 +149,17 @@ export default function ManageAppointmentsPage() {
     return appointments.filter((appointment) => {
       const service =
         typeof appointment.serviceId === "object"
-          ? appointment.serviceId?.serviceName
+          ? appointment.serviceId?.serviceName || ""
           : "";
 
+      const customerName = appointment.customer?.name || "";
+      const customerEmail = appointment.customer?.email || "";
+
       return (
-        service?.toLowerCase().includes(term) ||
+        service.toLowerCase().includes(term) ||
+        customerName.toLowerCase().includes(term) ||
+        customerEmail.toLowerCase().includes(term) ||
+        appointment.customerId.toLowerCase().includes(term) ||
         appointment._id.toLowerCase().includes(term) ||
         appointment.status.toLowerCase().includes(term) ||
         appointment.paymentStatus.toLowerCase().includes(term)
@@ -205,7 +223,7 @@ export default function ManageAppointmentsPage() {
             </h2>
           </div>
 
-          <div className="relative w-full sm:w-64">
+          <div className="relative w-full sm:w-72">
             <Search
               size={17}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -214,7 +232,7 @@ export default function ManageAppointmentsPage() {
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search appointments..."
+              placeholder="Search customer, email, service..."
               className="w-full rounded-xl border border-[#EDE5DF] py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[#81434F]"
             />
           </div>
@@ -237,21 +255,50 @@ export default function ManageAppointmentsPage() {
                   ? appointment.serviceId
                   : null;
 
+              const customer = appointment.customer;
+
               return (
                 <div key={appointment._id} className="p-5">
-                  <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                    <div>
+                  <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs text-gray-400">
-                        #{appointment._id.slice(-8).toUpperCase()}
+                        Appointment #{appointment._id.slice(-8).toUpperCase()}
                       </p>
 
-                      <h3 className="mt-1 font-bold text-[#29201F]">
-                        {service?.serviceName || "Service unavailable"}
-                      </h3>
+                      <div className="mt-3 flex items-center gap-3">
+                        {customer?.image ? (
+                          <Image
+                            src={customer.image}
+                            alt={customer.name || "Customer"}
+                            width={48}
+                            height={48}
+                            unoptimized
+                            className="h-12 w-12 rounded-full border border-[#EDE5DF] object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F5EDE9] text-[#81434F]">
+                            <UserRound size={22} />
+                          </div>
+                        )}
 
-                      <p className="mt-1 text-sm text-gray-500">
-                        Category: {service?.category || "N/A"}
-                      </p>
+                        <div className="min-w-0">
+                          <h3 className="truncate font-bold text-[#29201F]">
+                            {customer?.name || "Customer information unavailable"}
+                          </h3>
+                          <p className="truncate text-sm text-gray-500">
+                            {customer?.email || appointment.customerId}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-[#29201F]">
+                          {service?.serviceName || "Service unavailable"}
+                        </h4>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Category: {service?.category || "N/A"}
+                        </p>
+                      </div>
 
                       <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
@@ -299,7 +346,11 @@ export default function ManageAppointmentsPage() {
                             disabled={processingId === appointment._id}
                             className="flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
                           >
-                            <CheckCircle size={14} />
+                            {processingId === appointment._id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <CheckCircle size={14} />
+                            )}
                             Confirm
                           </button>
 
