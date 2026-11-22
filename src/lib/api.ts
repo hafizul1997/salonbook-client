@@ -48,10 +48,11 @@ export async function apiRequest<T>(
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
-    ...requestOptions,
-    headers: requestHeaders,
-    cache: "no-store",
-  });
+  ...requestOptions,
+  headers: requestHeaders,
+  credentials: "include",
+  cache: "no-store",
+});
 
   const data = await response.json();
 
