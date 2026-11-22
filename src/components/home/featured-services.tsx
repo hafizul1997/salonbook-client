@@ -1,14 +1,75 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock3, Star } from "lucide-react";
-import { services as featuredServices } from "@/data/services";
+import { ArrowRight, Clock3 } from "lucide-react";
+import { apiRequest } from "@/lib/api";
+
+type Service = {
+  _id: string;
+  serviceName: string;
+  category: string;
+  price: number;
+  duration: number;
+  image: string;
+  status: "active" | "inactive";
+};
+
+type ServicesResponse = {
+  success: boolean;
+  total: number;
+  data: Service[];
+};
 
 export default function FeaturedServices() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFeaturedServices() {
+      try {
+        const response = (await apiRequest(
+          "/services"
+        )) as ServicesResponse;
+
+        if (!Array.isArray(response.data)) {
+          throw new Error("Invalid services response.");
+        }
+
+        const activeServices = response.data
+          .filter((service) => service.status === "active")
+          .slice(0, 6);
+
+        if (isMounted) {
+          setServices(activeServices);
+        }
+      } catch (err) {
+        console.error("Failed to load featured services:", err);
+
+        if (isMounted) {
+          setError("Unable to load services. Please try again later.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadFeaturedServices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section className="bg-[#FCFAF7] px-5 py-24 lg:px-8">
       <div className="mx-auto max-w-7xl">
-
-        {/* SECTION HEADER */}
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
             <p className="text-xs font-bold tracking-[0.25em] text-[#9D5964] uppercase">
@@ -33,14 +94,30 @@ export default function FeaturedServices() {
           </Link>
         </div>
 
-        {/* SERVICE CARDS */}
+        {isLoading && (
+          <p className="mt-10 text-sm text-[#81434F]">
+            Loading featured services...
+          </p>
+        )}
+
+        {error && (
+          <p className="mt-10 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        {!isLoading && !error && services.length === 0 && (
+          <p className="mt-10 text-sm text-[#786e68]">
+            No active services available yet.
+          </p>
+        )}
+
         <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredServices.map((service) => (
+          {services.map((service) => (
             <article
-              key={service.id}
+              key={service._id}
               className="group overflow-hidden rounded-2xl border border-[#eee6df] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
-              {/* IMAGE */}
               <div className="relative overflow-hidden">
                 <div
                   className="h-64 bg-cover bg-center transition duration-500 group-hover:scale-105"
@@ -48,30 +125,19 @@ export default function FeaturedServices() {
                     backgroundImage: `url("${service.image}")`,
                   }}
                   role="img"
-                  aria-label={service.name}
+                  aria-label={service.serviceName}
                 />
-
-                {/* RATING */}
-                <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-white px-3 py-2 text-xs font-semibold shadow">
-                  <Star
-                    size={14}
-                    className="fill-[#D8A34C] text-[#D8A34C]"
-                  />
-                  {service.rating.toFixed(1)}
-                </div>
               </div>
 
-              {/* CONTENT */}
               <div className="p-6">
                 <p className="text-xs font-semibold text-[#9D5964]">
                   {service.category}
                 </p>
 
                 <h3 className="mt-2 text-xl font-semibold">
-                  {service.name}
+                  {service.serviceName}
                 </h3>
 
-                {/* PRICE AND DURATION */}
                 <div className="mt-5 flex items-center justify-between border-t border-[#eee6df] pt-5">
                   <div>
                     <p className="text-xl font-bold">
@@ -80,12 +146,12 @@ export default function FeaturedServices() {
 
                     <p className="mt-1 flex items-center gap-1 text-xs text-[#897f79]">
                       <Clock3 size={14} />
-                      {service.duration}
+                      {service.duration} min
                     </p>
                   </div>
 
                   <Link
-                    href={`/services/${service.id}`}
+                    href={`/services/${service._id}`}
                     className="inline-flex items-center gap-2 rounded-full bg-[#f7eeeb] px-5 py-3 text-xs font-bold text-[#81434F] transition hover:bg-[#81434F] hover:text-white"
                   >
                     View Details
@@ -96,7 +162,6 @@ export default function FeaturedServices() {
             </article>
           ))}
         </div>
-
       </div>
     </section>
   );

@@ -3,7 +3,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Scissors } from "lucide-react";
+import { Menu, X, Scissors, LayoutDashboard } from "lucide-react";
+
+import { authClient } from "@/lib/auth-client";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -15,10 +17,21 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
+  const { data: session, isPending } = authClient.useSession();
+
+  const isLoggedIn = !!session?.user;
+
+  const dashboardLink =
+    session?.user?.role === "admin" ? "/admin" : "/dashboard";
+
+  const dashboardLabel =
+    session?.user?.role === "admin"
+      ? "Admin Dashboard"
+      : "Dashboard";
+
   return (
     <header className="sticky top-0 z-50 border-b border-[#eee6df] bg-[#FCFAF7]/95 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
-
         {/* LOGO */}
         <Link
           href="/"
@@ -46,19 +59,35 @@ export default function Navbar() {
 
         {/* DESKTOP BUTTONS */}
         <div className="hidden items-center gap-5 md:flex">
-          <Link
-            href="/sign-in"
-            className="text-sm font-semibold transition hover:text-[#9D5964]"
-          >
-            Sign In
-          </Link>
+          {!isPending && (
+            <>
+              {isLoggedIn ? (
+                <Link
+                  href={dashboardLink}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#81434F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#69343F]"
+                >
+                  <LayoutDashboard size={17} />
+                  {dashboardLabel}
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="text-sm font-semibold transition hover:text-[#9D5964]"
+                  >
+                    Sign In
+                  </Link>
 
-          <Link
-            href="/sign-up"
-            className="rounded-full bg-[#81434F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#69343F]"
-          >
-            Get Started
-          </Link>
+                  <Link
+                    href="/sign-up"
+                    className="rounded-full bg-[#81434F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#69343F]"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
+            </>
+          )}
         </div>
 
         {/* MOBILE MENU BUTTON */}
@@ -88,23 +117,38 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <div className="flex flex-col gap-3 border-t border-[#eee6df] pt-5">
-              <Link
-                href="/sign-in"
-                onClick={() => setIsOpen(false)}
-                className="text-sm font-semibold"
-              >
-                Sign In
-              </Link>
+            {!isPending && (
+              <div className="flex flex-col gap-3 border-t border-[#eee6df] pt-5">
+                {isLoggedIn ? (
+                  <Link
+                    href={dashboardLink}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center gap-2 rounded-full bg-[#81434F] px-5 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    <LayoutDashboard size={17} />
+                    {dashboardLabel}
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      onClick={() => setIsOpen(false)}
+                      className="text-sm font-semibold"
+                    >
+                      Sign In
+                    </Link>
 
-              <Link
-                href="/sign-up"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full bg-[#81434F] px-5 py-3 text-center text-sm font-semibold text-white"
-              >
-                Get Started
-              </Link>
-            </div>
+                    <Link
+                      href="/sign-up"
+                      onClick={() => setIsOpen(false)}
+                      className="rounded-full bg-[#81434F] px-5 py-3 text-center text-sm font-semibold text-white"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -14,6 +14,23 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
+function getAuthRedirectUrl() {
+  const requestedPath = new URLSearchParams(
+    window.location.search
+  ).get("returnTo");
+
+  const safeReturnTo =
+    requestedPath &&
+    requestedPath.startsWith("/") &&
+    !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/dashboard";
+
+  return `/auth/redirect?returnTo=${encodeURIComponent(
+    safeReturnTo
+  )}`;
+}
+
 export default function SignInPage() {
   const router = useRouter();
 
@@ -32,20 +49,23 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
+      const redirectUrl = getAuthRedirectUrl();
+
       const result = await authClient.signIn.email({
         email,
         password,
-      callbackURL: "http://localhost:3000/auth/redirect",
-      
+        callbackURL: `${window.location.origin}${redirectUrl}`,
       });
 
       if (result.error) {
-        setError(result.error.message || "Invalid email or password.");
+        setError(
+          result.error.message || "Invalid email or password."
+        );
         return;
       }
 
-     router.push("/dashboard");
-     router.refresh();
+      router.replace(redirectUrl);
+      router.refresh();
     } catch (err) {
       console.error("Sign in error:", err);
       setError("Unable to sign in. Please try again.");
@@ -60,9 +80,11 @@ export default function SignInPage() {
     setGoogleLoading(true);
 
     try {
+      const redirectUrl = getAuthRedirectUrl();
+
       const result = await authClient.signIn.social({
         provider: "google",
-    callbackURL: "http://localhost:3000/auth/redirect",
+        callbackURL: `${window.location.origin}${redirectUrl}`,
       });
 
       if (result.error) {
