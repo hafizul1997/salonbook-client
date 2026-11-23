@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   MapPin,
@@ -30,10 +29,10 @@ export default function Footer() {
       id="contact"
       className="bg-[#29201F] px-5 pt-16 pb-8 text-white lg:px-8"
     >
-      <div className="mx-auto grid max-w-7xl gap-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-12 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-4">
 
         {/* BRAND */}
-        <div>
+        <div className="flex flex-col items-center sm:items-start">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-2xl font-bold"
@@ -49,7 +48,7 @@ export default function Footer() {
           </p>
 
           {/* SOCIAL MEDIA */}
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex justify-center gap-3 sm:justify-start">
             <a
               href="https://www.instagram.com/"
               target="_blank"
@@ -76,7 +75,7 @@ export default function Footer() {
         <div>
           <h3 className="font-semibold">Quick Links</h3>
 
-          <div className="mt-6 flex flex-col gap-4 text-sm text-white/60">
+          <div className="mt-6 flex flex-col items-center gap-4 text-sm text-white/60 sm:items-start">
             {quickLinks.map((link) => (
               <Link
                 key={link.name}
@@ -93,7 +92,7 @@ export default function Footer() {
         <div>
           <h3 className="font-semibold">Our Services</h3>
 
-          <div className="mt-6 flex flex-col gap-4 text-sm text-white/60">
+          <div className="mt-6 flex flex-col items-center gap-4 text-sm text-white/60 sm:items-start">
             {serviceLinks.map((service) => (
               <Link
                 key={service}
@@ -110,24 +109,24 @@ export default function Footer() {
         <div>
           <h3 className="font-semibold">Contact Us</h3>
 
-          <div className="mt-6 flex flex-col gap-5 text-sm text-white/60">
+          <div className="mt-6 flex flex-col items-center gap-5 text-sm text-white/60 sm:items-start">
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
               <MapPin size={18} className="shrink-0 text-[#D69BA1]" />
               <p>SalonBook Beauty Studio</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
               <Phone size={18} className="shrink-0 text-[#D69BA1]" />
               <p>Contact Number</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
               <Mail size={18} className="shrink-0 text-[#D69BA1]" />
               <p>Email Address</p>
             </div>
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center gap-3 sm:justify-start">
               <Clock3 size={18} className="shrink-0 text-[#D69BA1]" />
               <p>Mon – Sat: 9 AM – 9 PM</p>
             </div>
