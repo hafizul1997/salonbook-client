@@ -1,157 +1,144 @@
 # SalonBook – Salon Appointment Booking Platform
 
-SalonBook is a full-stack salon appointment booking platform that allows customers to explore salon services, book appointments, manage their bookings, and make secure online payments. Administrators can manage services, appointments, customers, and transactions through a dedicated dashboard.
+SalonBook is a full-stack salon appointment booking platform. Customers can explore salon services, create and manage appointments, and pay for confirmed bookings. Administrators can manage services, appointments, customers, and transaction records through a role-based dashboard.
+
+## Live Application
+
+- **Frontend:** https://salonbook-client-5blk.vercel.app/
+- **Backend API:** https://salonbook-server-9hvv.onrender.com
+- **Client repository:** https://github.com/hafizul1997/salonbook-client
+- **Server repository:** https://github.com/hafizul1997/salonbook-server
 
 ## Features
 
-### Customer Features
-- Browse all available salon services.
-- Search services by name.
+### Customer
+- Browse active salon services and view service details.
+- Search services by name and filter by category.
 - Sort services by price.
-- View detailed service information, pricing, and duration.
-- Register and sign in securely.
-- Book salon appointments.
-- View personal appointments and booking status.
+- Register and sign in with email/password or Google.
+- Book appointments for available dates and time slots.
+- View appointment status and payment status.
 - Cancel pending appointments.
-- Pay for confirmed appointments using Stripe Checkout.
-- View payment status and transaction information.
-- Update personal profile information and profile image.
+- Prevent duplicate active bookings for the same date and time slot.
+- Pay for confirmed appointments through Stripe Checkout.
+- View and update profile information.
 
-### Admin Features
-- Admin dashboard with overview statistics.
-- Create, update, and delete salon services.
-- Upload service images using ImgBB.
-- Activate or deactivate services.
-- View and manage customer appointments.
+### Administrator
+- Access a role-based admin dashboard.
+- Create, update, activate/deactivate, and delete salon services.
+- Upload service images through ImgBB.
+- View and manage appointment requests.
 - Confirm or cancel appointments.
-- View customer information.
-- Block or unblock customer accounts.
-- View and manage transaction records.
+- View registered customers and block/unblock customer accounts.
+- View transaction records.
 - Update administrator profile information.
+- Admin accounts cannot create customer appointments.
 
 ## Technology Stack
 
 ### Frontend
-- Next.js 16 (App Router)
-- React 19
+- Next.js (App Router)
+- React
 - TypeScript
-- Tailwind CSS 4
+- Tailwind CSS
 - Better Auth
-- React Hook Form
-- Zod
-- Sonner
+- React Hook Form and Zod
+- Sonner notifications
 - Lucide React
-- Framer Motion
 
-### Backend
-The frontend communicates with a REST API built using Node.js, Express.js, TypeScript, and MongoDB.
+### Backend and Services
+- Node.js
+- Express.js
+- TypeScript
+- MongoDB and Mongoose
+- Better Auth and JWT
+- Google OAuth
+- Stripe Checkout and webhooks
+- ImgBB image hosting
 
-### Integrations
-- Better Auth – Authentication
-- Google OAuth – Social authentication
-- Stripe – Online payment processing
-- ImgBB – Image hosting
-
-## Project Structure
-
-```text
-salonbook-client/
-├── public/
-├── src/
-│   ├── app/
-│   │   ├── admin/
-│   │   ├── auth/
-│   │   ├── dashboard/
-│   │   ├── services/
-│   │   ├── sign-in/
-│   │   └── sign-up/
-│   ├── components/
-│   │   ├── home/
-│   │   └── ui/
-│   ├── data/
-│   └── lib/
-├── .env
-├── package.json
-└── README.md
-```
-
-## Installation and Setup
+## Getting Started
 
 ### Prerequisites
 - Node.js (LTS recommended)
 - npm
 - Git
-- Running SalonBook backend server
+- A running SalonBook backend
 
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_CLIENT_GITHUB_REPOSITORY_URL
-```
-
-### 2. Navigate to the project
-
-```bash
+git clone https://github.com/hafizul1997/salonbook-client.git
 cd salonbook-client
 ```
 
-### 3. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Configure environment variables
+### 3. Configure environment variables
 
-Create a `.env` file in the project root.
+Create `.env.local` in the project root:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_AUTH_URL=http://localhost:5000
 ```
 
-Use the appropriate backend API URL when deploying to production.
+For production, the Vercel project uses:
 
-Never commit `.env` files or expose secret credentials.
+```env
+NEXT_PUBLIC_API_URL=https://salonbook-server-9hvv.onrender.com/api
+NEXT_PUBLIC_AUTH_URL=https://salonbook-server-9hvv.onrender.com
+```
 
-### 5. Run the development server
+Do not commit `.env`, `.env.local`, or any file containing real credentials.
+
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open http://localhost:3000.
 
-## Available Scripts
+### Available Scripts
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Create production build |
-| `npm run start` | Start production server |
+| `npm run dev` | Start the development server |
+| `npm run build` | Build the production application |
+| `npm run start` | Start the production server |
 | `npm run lint` | Run ESLint |
 
-## Backend Repository
+## Backend
 
-The SalonBook backend is maintained in a separate repository.
+The backend is maintained in a separate repository:
 
-**Backend GitHub Repository:** YOUR_SERVER_GITHUB_REPOSITORY_URL
+https://github.com/hafizul1997/salonbook-server
 
-The backend provides REST APIs for authentication, services, appointments, users, image uploads, payments, and transactions.
+The backend provides REST APIs for authentication, services, appointments, user management, image uploads, payments, and transactions.
 
-## Live Demo
+## Deployment
 
-**Live Application:** YOUR_LIVE_DEPLOYMENT_URL
-
-*Replace this placeholder with the deployed application URL when available.*
+- The frontend is deployed on Vercel.
+- The backend is deployed on Render.
+- Production API base URL: `https://salonbook-server-9hvv.onrender.com/api`
 
 ## Security
 
-- Authentication and authorization are handled through secure authentication mechanisms.
-- Protected operations require appropriate user roles.
-- Payment status is updated through verified Stripe webhook events.
-- Environment variables and secret credentials must never be committed to Git.
+- Authentication is handled by Better Auth.
+- Protected features use authenticated sessions/JWT-based backend authorization.
+- Admin and customer permissions are enforced by the backend.
+- Blocked users are restricted from protected platform features.
+- Payment status must be updated only after a verified Stripe webhook event.
+- Secret keys and database credentials must be stored in environment variables, never committed to Git.
+
+## Project Status
+
+The frontend and backend are deployed. Email/password and Google sign-in have been tested with current accounts. An older customer account still has a sign-in issue and requires separate account-level investigation. Payment/webhook production verification should be completed before final submission.
 
 ## Author
 
-Developed as a full-stack web development assignment.
-
+SalonBook – Full-Stack Web Development Assignment.
